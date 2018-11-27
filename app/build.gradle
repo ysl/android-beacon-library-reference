@@ -21,5 +21,15 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:appcompat-v7:28.0.0'
     //compile project(':android-beacon-library')
-    compile 'org.altbeacon:android-beacon-library:2+'
+    //compile 'org.altbeacon:android-beacon-library:2+'
+
+    //FAILS
+    //compile 'android-beacon-library:2.15.3-beta1@aar'
+    //compile 'android-beacon-library:more-reliable-service-stop@aar'
+
+    //WORKS
+    //compile(name:'android-beacon-library', version: '2.15.3-beta1', ext:'aar')
+    //compile(name:'android-beacon-library', version: 'more-reliable-service-stop', ext:'aar')
+    //compile 'org.altbeacon:android-beacon-library:2.15.3-beta1@aar'
+    compile 'org.altbeacon:android-beacon-library:more-reliable-service-stop@aar'
 }
