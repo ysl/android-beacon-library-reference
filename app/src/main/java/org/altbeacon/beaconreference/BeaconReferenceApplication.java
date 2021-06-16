@@ -16,9 +16,16 @@ import android.util.Log;
 
 import org.altbeacon.beacon.BeaconManager;
 import org.altbeacon.beacon.Region;
+import org.altbeacon.beacon.BeaconParser;
 import org.altbeacon.beacon.powersave.BackgroundPowerSaver;
 import org.altbeacon.beacon.startup.RegionBootstrap;
 import org.altbeacon.beacon.startup.BootstrapNotifier;
+
+import org.altbeacon.beacon.BeaconTransmitter;
+import org.altbeacon.beacon.Beacon;
+import android.bluetooth.le.AdvertiseCallback;
+import android.bluetooth.le.AdvertiseSettings;
+import java.util.Arrays;
 
 /**
  * Created by dyoung on 12/13/13.
@@ -45,6 +52,11 @@ public class BeaconReferenceApplication extends Application implements Bootstrap
         //beaconManager.getBeaconParsers().add(new BeaconParser().
         //        setBeaconLayout("m:2-3=beac,i:4-19,i:20-21,i:22-23,p:24-24,d:25-25"));
 
+        // The example shows how to find iBeacon.
+        beaconManager.getBeaconParsers().add(
+               new BeaconParser().
+                        setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24"));
+
         beaconManager.setDebug(true);
 
 
@@ -54,7 +66,7 @@ public class BeaconReferenceApplication extends Application implements Bootstrap
         // communicate to users that your app is using resources in the background.
         //
 
-        /*
+
         Notification.Builder builder = new Notification.Builder(this);
         builder.setSmallIcon(R.drawable.ic_launcher);
         builder.setContentTitle("Scanning for Beacons");
@@ -81,11 +93,11 @@ public class BeaconReferenceApplication extends Application implements Bootstrap
         beaconManager.setEnableScheduledScanJobs(false);
         beaconManager.setBackgroundBetweenScanPeriod(0);
         beaconManager.setBackgroundScanPeriod(1100);
-        */
+
 
         Log.d(TAG, "setting up background monitoring for beacons and power saving");
         // wake up the app when a beacon is seen
-        Region region = new Region("backgroundRegion",
+        Region region = new Region("7BC06B1A-3D9E-4661-B89A-57774150F00D",
                 null, null, null);
         regionBootstrap = new RegionBootstrap(this, region);
 
@@ -97,6 +109,31 @@ public class BeaconReferenceApplication extends Application implements Bootstrap
         // If you wish to test beacon detection in the Android Emulator, you can use code like this:
         // BeaconManager.setBeaconSimulator(new TimedBeaconSimulator() );
         // ((TimedBeaconSimulator) BeaconManager.getBeaconSimulator()).createTimedSimulatedBeacons();
+
+        Beacon beacon = new Beacon.Builder()
+                .setId1("CB10023F-A318-3394-4199-A8730C7C1AEC")
+                .setId2("1")
+                .setId3("2")
+                .setManufacturer(0x004c) // Radius Networks.  Change this for other beacon layouts
+                .setTxPower(-59)
+                .setDataFields(Arrays.asList(new Long[] {0l})) // Remove this for beacon layouts without d: fields
+                .build();
+
+        // Change the layout below for other beacon types
+        BeaconParser beaconParser = new BeaconParser()
+                .setBeaconLayout("m:2-3=0215,i:4-19,i:20-21,i:22-23,p:24-24");
+        BeaconTransmitter beaconTransmitter = new BeaconTransmitter(getApplicationContext(), beaconParser);
+        beaconTransmitter.startAdvertising(beacon, new AdvertiseCallback() {
+            @Override
+            public void onStartFailure(int errorCode) {
+                Log.e(TAG, "Advertisement start failed with code: "+errorCode);
+            }
+
+            @Override
+            public void onStartSuccess(AdvertiseSettings settingsInEffect) {
+                Log.i(TAG, "Advertisement start succeeded.");
+            }
+        });
     }
 
     public void disableMonitoring() {
